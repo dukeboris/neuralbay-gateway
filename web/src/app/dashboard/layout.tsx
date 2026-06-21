@@ -4,13 +4,14 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth"
+import { useI18n } from "@/i18n"
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "📊" },
-  { href: "/keys", label: "API Keys", icon: "🔑" },
-  { href: "/models", label: "Models", icon: "🤖" },
-  { href: "/usage", label: "Usage", icon: "📈" },
-  { href: "/billing", label: "Billing", icon: "💳" },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: "📊" },
+  { href: "/keys", labelKey: "nav.keys", icon: "🔑" },
+  { href: "/models", labelKey: "nav.models", icon: "🤖" },
+  { href: "/usage", labelKey: "nav.usage", icon: "📈" },
+  { href: "/billing", labelKey: "nav.billing", icon: "💳" },
 ]
 
 export default function DashboardLayout({
@@ -19,6 +20,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { user, loading, logout, isAdmin } = useAuth()
+  const { t, locale, setLocale } = useI18n()
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -34,7 +36,7 @@ export default function DashboardLayout({
       <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-gray-500">Loading...</p>
+          <p className="text-sm text-gray-500">{t("common.loading")}</p>
         </div>
       </div>
     )
@@ -65,47 +67,70 @@ export default function DashboardLayout({
         </div>
         <nav className="flex flex-col justify-between" style={{ height: "calc(100vh - 64px)" }}>
           <div className="space-y-1 p-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                  pathname === item.href
-                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
-                    : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-900"
-                }`}
-              >
-                <span className="text-lg">{item.icon}</span>
-                {sidebarOpen && <span>{item.label}</span>}
-              </Link>
-            ))}
-          </div>
-          {sidebarOpen && (
-            <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-medium text-white">
-                  {user.display_name?.[0] || user.username?.[0] || "U"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                    {user.display_name || user.username}
-                  </p>
-                  <p className="truncate text-xs text-gray-500">
-                    {isAdmin ? "Admin" : "User"}
-                  </p>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="rounded p-1 text-gray-400 hover:text-red-500"
-                  title="退出登录"
+            {navItems.map((item) => {
+              const activePath = item.href
+              // dashboard layout renders for /dashboard only; other routes also match /dashboard layout
+              const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard")
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                      : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-900"
+                  }`}
                 >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
+                  <span className="text-lg">{item.icon}</span>
+                  {sidebarOpen && <span>{t(item.labelKey)}</span>}
+                </Link>
+              )
+            })}
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-800">
+            {sidebarOpen && (
+              <div className="p-4 space-y-3">
+                {/* Language switcher */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setLocale("en")}
+                    className={`rounded px-2 py-1 text-xs font-medium ${locale === "en" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300" : "text-gray-400 hover:text-gray-600"}`}
+                  >
+                    EN
+                  </button>
+                  <button
+                    onClick={() => setLocale("zh")}
+                    className={`rounded px-2 py-1 text-xs font-medium ${locale === "zh" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300" : "text-gray-400 hover:text-gray-600"}`}
+                  >
+                    中文
+                  </button>
+                </div>
+                {/* User info */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-medium text-white">
+                    {user.display_name?.[0] || user.username?.[0] || "U"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                      {user.display_name || user.username}
+                    </p>
+                    <p className="truncate text-xs text-gray-500">
+                      {isAdmin ? t("dashboard.roleAdmin") : t("dashboard.roleUser")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="rounded p-1 text-gray-400 hover:text-red-500"
+                    title={t("auth.logout")}
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </nav>
       </aside>
 
@@ -113,7 +138,7 @@ export default function DashboardLayout({
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
         <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 dark:border-gray-800 dark:bg-gray-950">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {navItems.find((n) => n.href === pathname)?.label || "Dashboard"}
+            {navItems.find((n) => n.href === pathname)?.labelKey ? t(navItems.find((n) => n.href === pathname)!.labelKey) : t("dashboard.title")}
           </h2>
           <div className="flex items-center gap-4">
             <a
@@ -122,7 +147,7 @@ export default function DashboardLayout({
               rel="noopener noreferrer"
               className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
-              API Docs
+              {t("nav.apiDocs")}
             </a>
           </div>
         </header>
