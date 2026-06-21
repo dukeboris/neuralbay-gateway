@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth"
 import { getTokens, getUserLogs } from "@/lib/api"
+import { useDashboardSSE } from "@/hooks/useDashboardSSE"
+import { Spinner } from "@/components"
 import type { UsageLog, ApiKey } from "@/lib/types"
 
 function formatTokens(n: number): string {
@@ -10,13 +12,6 @@ function formatTokens(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M"
   if (n >= 1_000) return (n / 1_000).toFixed(1) + "K"
   return String(n)
-}
-
-function formatCost(quota: number): string {
-  // quota 通常以 1/100 美分或 token 为单位，这里做个粗略显示
-  const usd = quota / 500000
-  if (usd >= 1) return "$" + usd.toFixed(2)
-  return "$" + usd.toFixed(4)
 }
 
 function timeAgo(ts: number): string {
@@ -31,6 +26,7 @@ function timeAgo(ts: number): string {
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const { stats, connected } = useDashboardSSE()
   const [keys, setKeys] = useState<ApiKey[]>([])
   const [logs, setLogs] = useState<UsageLog[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,47 +46,48 @@ export default function DashboardPage() {
 
   if (!user) return null
 
+  // Use real-time stats if connected, otherwise fall back to user data
+  const totalRequests = stats?.total_requests ?? user.request_count
+  const tokensUsed = stats?.tokens_used ?? user.used_quota
+  const activeKeys = stats?.active_keys ?? keys.filter(k => k.status === 1).length
   const quotaPercent = user.quota > 0
     ? Math.round((user.used_quota / user.quota) * 100)
     : 0
 
-  const stats = [
-    { label: "Total Requests", value: String(user.request_count), change: "", color: "indigo" },
-    { label: "Quota Used", value: formatTokens(user.used_quota), change: quotaPercent + "%", color: "emerald" },
-    { label: "Active Keys", value: String(keys.filter(k => k.status === 1).length), change: "", color: "amber" },
-    { label: "Total Quota", value: formatTokens(user.quota), change: "", color: "rose" },
+  const statCards = [
+    { label: "Total Requests", value: totalRequests.toLocaleString(), color: "indigo" },
+    { label: "Tokens Used", value: formatTokens(Number(tokensUsed)), color: "emerald" },
+    { label: "Active Keys", value: String(activeKeys), color: "amber" },
+    { label: "Total Quota", value: formatTokens(user.quota), color: "rose" },
   ]
 
   return (
     <div className="space-y-6">
-      {loading && (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-          Loading dashboard data...
-        </div>
-      )}
+      {/* Connection indicator */}
+      <div className="flex items-center gap-3">
+        {loading && <Spinner />}
+        <span className={`inline-flex items-center gap-1.5 text-xs ${connected ? "text-emerald-600" : "text-gray-400"}`}>
+          <span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-500 animate-pulse" : "bg-gray-300"}`} />
+          {connected ? "Live" : "Static"}
+        </span>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {statCards.map((stat) => (
           <div key={stat.label} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
             <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-            <div className="mt-2 flex items-baseline gap-2">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-              {stat.change && (
-                <span className={`text-sm font-medium text-${stat.color}-600`}>{stat.change}</span>
-              )}
-            </div>
+            <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity + Quota */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
           {logs.length === 0 ? (
-            <p className="mt-4 text-sm text-gray-400">暂无使用记录</p>
+            <p className="mt-4 text-sm text-gray-400">No usage records yet</p>
           ) : (
             <div className="mt-4 space-y-4">
               {logs.slice(0, 5).map((log) => (
@@ -109,7 +106,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quota Usage */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-950">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quota Usage</h3>
           <div className="mt-4">
@@ -128,17 +124,16 @@ export default function DashboardPage() {
               />
             </div>
           </div>
-
-          <div className="mt-6 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">User Group</span>
+          <div className="mt-6 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Group</span>
               <span className="font-medium text-gray-900 dark:text-white">{user.group}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">API Keys</span>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Keys</span>
               <span className="font-medium text-gray-900 dark:text-white">{keys.length}</span>
             </div>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between">
               <span className="text-gray-500">Role</span>
               <span className="font-medium text-gray-900 dark:text-white">
                 {user.role >= 3 ? "Root" : user.role >= 2 ? "Admin" : "User"}

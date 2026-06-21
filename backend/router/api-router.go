@@ -1,4 +1,4 @@
-package router
+﻿package router
 
 import (
 	"github.com/QuantumNous/new-api/controller"
@@ -15,8 +15,7 @@ func SetApiRouter(router *gin.Engine) {
 	apiRouter := router.Group("/api")
 	apiRouter.Use(middleware.RouteTag("api"))
 	apiRouter.Use(gzip.Gzip(gzip.DefaultCompression))
-	apiRouter.Use(middleware.BodyStorageCleanup()) // 清理请求体存储
-	apiRouter.Use(middleware.GlobalAPIRateLimit())
+	apiRouter.Use(middleware.BodyStorageCleanup()) // 娓呯悊璇锋眰浣撳瓨鍌?	apiRouter.Use(middleware.GlobalAPIRateLimit())
 	anonymousRequestBodyLimit := middleware.AnonymousRequestBodyLimit()
 	{
 		apiRouter.GET("/setup", controller.GetSetup)
@@ -29,6 +28,7 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/user-agreement", controller.GetUserAgreement)
 		apiRouter.GET("/privacy-policy", controller.GetPrivacyPolicy)
 		apiRouter.GET("/about", controller.GetAbout)
+		apiRouter.GET("/dashboard/sse", middleware.UserAuth(), controller.DashboardSSE)
 		//apiRouter.GET("/midjourney", controller.GetMidjourney)
 		apiRouter.GET("/home_page_content", controller.GetHomePageContent)
 		apiRouter.GET("/pricing", middleware.HeaderNavModuleAuth("pricing"), controller.GetPricing)
@@ -190,7 +190,7 @@ func SetApiRouter(router *gin.Engine) {
 			optionRoute.GET("/channel_affinity_cache", controller.GetChannelAffinityCacheStats)
 			optionRoute.DELETE("/channel_affinity_cache", controller.ClearChannelAffinityCache)
 			optionRoute.POST("/rest_model_ratio", controller.ResetModelRatio)
-			optionRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 用于迁移检测的旧键，下个版本会删除
+			optionRoute.POST("/migrate_console_setting", controller.MigrateConsoleSetting) // 鐢ㄤ簬杩佺Щ妫€娴嬬殑鏃ч敭锛屼笅涓増鏈細鍒犻櫎
 			optionRoute.GET("/waffo-pancake/catalog", controller.ListWaffoPancakeCatalog)
 			optionRoute.POST("/waffo-pancake/pair", controller.CreateWaffoPancakePair)
 			optionRoute.POST("/waffo-pancake/save", controller.SaveWaffoPancake)
@@ -400,3 +400,4 @@ func SetApiRouter(router *gin.Engine) {
 		}
 	}
 }
+

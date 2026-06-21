@@ -2,12 +2,29 @@
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, master]
   pull_request:
-    branches: [main]
+    branches: [main, master]
 
 jobs:
-  backend-tests:
+  backend-lint:
+    name: Backend Lint & Vet
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.23"
+    - name: go vet
+      run: cd backend && go vet ./...
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        working-directory: backend
+        version: latest
+        args: --timeout=5m
+
+  backend-test:
     name: Backend Tests
     runs-on: ubuntu-latest
     steps:
@@ -16,9 +33,35 @@ jobs:
       with:
         go-version: "1.23"
     - name: Run unit tests
-      run: |
-        cd backend
-        go test ./... -v -race -count=1
+      run: cd backend && go test ./... -v -race -count=1 -timeout=10m
+
+  backend-security:
+    name: Backend Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: "1.23"
+    - name: gosec
+      uses: securego/gosec@master
+      with:
+        args: -fmt=json -out=gosec-report.json ./...
+
+  frontend-lint:
+    name: Frontend Lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "24"
+        cache: "npm"
+        cache-dependency-path: web/package-lock.json
+    - name: Install dependencies
+      run: cd web && npm ci
+    - name: Lint
+      run: cd web && npm run lint
 
   frontend-build:
     name: Frontend Build
@@ -31,18 +74,14 @@ jobs:
         cache: "npm"
         cache-dependency-path: web/package-lock.json
     - name: Install dependencies
-      run: |
-        cd web
-        npm ci
+      run: cd web && npm ci
     - name: Build
-      run: |
-        cd web
-        npm run build
+      run: cd web && npm run build
 
   docker-build:
     name: Docker Build & Push
-    needs: [backend-tests, frontend-build]
-    if: github.ref == 'refs/heads/main'
+    needs: [backend-test, frontend-build]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -53,37 +92,12 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Build and push backend
+    - name: Build and push
       uses: docker/build-push-action@v6
       with:
-        context: .
-        file: deploy/docker/Dockerfile
+        context: ./backend
+        file: backend/Dockerfile
         push: true
         tags: |
-          your-registry/new-api:latest
-          your-registry/new-api:${{ github.sha }}
-    - name: Build and push frontend
-      uses: docker/build-push-action@v6
-      with:
-        context: ./web
-        push: true
-        tags: |
-          your-registry/new-api-web:latest
-          your-registry/new-api-web:${{ github.sha }}
-
-  deploy:
-    name: Deploy to Production
-    needs: docker-build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          cd /opt/new-api
-          docker compose pull
-          docker compose up -d --force-recreate
-          docker image prune -f
+          ${{ secrets.DOCKER_USERNAME }}/neuralbay-gateway:latest
+          ${{ secrets.DOCKER_USERNAME }}/neuralbay-gateway:${{ github.sha }}
