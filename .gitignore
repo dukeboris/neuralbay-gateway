@@ -1,0 +1,43 @@
+﻿# Go
+backend/new-api.exe
+backend/new-api
+backend/*.exe
+backend/*.test
+backend/vendor/
+
+# Node
+web/node_modules/
+web/.next/
+web/build/
+web/dist/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Data
+data/
+*.db
+
+# Temp
+tmp/
+temp/
+C:\tmp\*
+
+# Docker
+.docker/

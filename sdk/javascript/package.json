@@ -1,0 +1,16 @@
+﻿{
+  "name": "neuralbay",
+  "version": "0.1.0",
+  "description": "NeuralBay AI Gateway JavaScript SDK",
+  "main": "dist/neuralbay.js",
+  "types": "dist/neuralbay.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["ai", "api", "gateway", "llm"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
