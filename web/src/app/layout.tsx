@@ -1,8 +1,8 @@
-﻿import type { Metadata } from "next"
+import type { Metadata } from "next"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "New API - AI Gateway Management",
+  title: "NeuralBay - AI Gateway Management",
   description: "Unified AI model hub for aggregation & distribution",
 }
 
