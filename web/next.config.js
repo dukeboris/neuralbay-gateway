@@ -1,11 +1,12 @@
-﻿/** @type {import('next').NextConfig} */
+﻿/** @type {import("next").NextConfig} */
 const nextConfig = {
-  output: 'export',
-  distDir: 'build',
+  output: "export",
+  distDir: "build",
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  transpilePackages: ['lucide-react'],
+  transpilePackages: ["lucide-react"],
 }
 
 module.exports = nextConfig
