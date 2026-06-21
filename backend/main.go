@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"bytes"
@@ -28,6 +28,7 @@ import (
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-contrib/sessions"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -97,10 +98,9 @@ func main() {
 		go model.SyncChannelCache(common.SyncFrequency)
 	}
 
-	// 热更新配置
-	go model.SyncOptions(common.SyncFrequency)
+	// 鐑洿鏂伴厤缃?	go model.SyncOptions(common.SyncFrequency)
 
-	// 数据看板
+	// 鏁版嵁鐪嬫澘
 	go model.UpdateQuotaData()
 
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
@@ -172,6 +172,7 @@ func main() {
 	// This will cause SSE not to work!!!
 	//server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())
+	server.Use(middleware.PrometheusMetrics())
 	server.Use(middleware.PoweredBy())
 	server.Use(middleware.I18n())
 	middleware.SetUpLogger(server)
@@ -189,7 +190,8 @@ func main() {
 	InjectUmamiAnalytics()
 	InjectGoogleAnalytics()
 
-	// 设置路由
+	// 璁剧疆璺敱
+	server.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	router.SetRouter(server, router.ThemeAssets{
 		DefaultBuildFS:   buildFS,
 		DefaultIndexPage: indexPage,
@@ -265,7 +267,7 @@ func InitResources() error {
 		}
 	}
 
-	// 加载环境变量
+	// 鍔犺浇鐜鍙橀噺
 	common.InitEnv()
 
 	logger.SetupLogger()
@@ -289,11 +291,10 @@ func InitResources() error {
 	// Initialize options, should after model.InitDB()
 	model.InitOptionMap()
 
-	// 清理旧的磁盘缓存文件
+	// 娓呯悊鏃х殑纾佺洏缂撳瓨鏂囦欢
 	common.CleanupOldCacheFiles()
 
-	// 初始化模型
-	model.GetPricing()
+	// 鍒濆鍖栨ā鍨?	model.GetPricing()
 
 	// Initialize SQL Database
 	err = model.InitLogDB()
@@ -309,7 +310,7 @@ func InitResources() error {
 
 	perfmetrics.Init()
 
-	// 启动系统监控
+	// 鍚姩绯荤粺鐩戞帶
 	common.StartSystemMonitor()
 
 	// Initialize i18n
@@ -332,3 +333,4 @@ func InitResources() error {
 
 	return nil
 }
+

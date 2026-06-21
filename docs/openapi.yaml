@@ -1,0 +1,307 @@
+﻿openapi: "3.0.3"
+info:
+  title: NeuralBay AI Gateway API
+  description: |
+    Unified AI model aggregation gateway.
+    Cross-converts between OpenAI, Claude, and Gemini formats.
+  version: "1.0.0-rc.14"
+  contact:
+    name: NeuralBay Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+
+paths:
+  /status:
+    get:
+      summary: System status
+      tags: [System]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                      password_login_enabled:
+                        type: boolean
+
+  /user/login:
+    post:
+      summary: Password login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Login response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      role:
+                        type: integer
+
+  /user/register:
+    post:
+      summary: Register new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Registration response
+
+  /user/self:
+    get:
+      summary: Get current user info
+      tags: [User]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: User info
+
+  /token:
+    get:
+      summary: List API keys
+      tags: [Tokens]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated token list
+
+    post:
+      summary: Create API key
+      tags: [Tokens]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                remain_quota:
+                  type: integer
+                unlimited_quota:
+                  type: boolean
+      responses:
+        "200":
+          description: Created token
+
+  /token/{id}:
+    delete:
+      summary: Delete API key
+      tags: [Tokens]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+
+  /models:
+    get:
+      summary: List available models
+      tags: [Models]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Models grouped by channel
+
+  /dashboard/sse:
+    get:
+      summary: Real-time dashboard stats (SSE)
+      tags: [Dashboard]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /log/self:
+    get:
+      summary: User usage logs
+      tags: [Logs]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+        - name: model_name
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated log list
+
+  # Relay endpoints
+  /v1/chat/completions:
+    post:
+      summary: Chat completions (OpenAI-compatible)
+      tags: [Relay]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatCompletionRequest"
+      responses:
+        "200":
+          description: Chat completion response
+
+  /v1/images/generations:
+    post:
+      summary: Image generation (OpenAI-compatible)
+      tags: [Relay]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Image generation response
+
+  /v1/embeddings:
+    post:
+      summary: Embeddings (OpenAI-compatible)
+      tags: [Relay]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Embedding response
+
+  /v1/audio/speech:
+    post:
+      summary: Text-to-speech (OpenAI-compatible)
+      tags: [Relay]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Audio response
+
+  /v1/messages:
+    post:
+      summary: Messages (Claude-compatible)
+      tags: [Relay]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Claude message response
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      tags: [System]
+      responses:
+        "200":
+          description: Prometheus text format
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    ChatCompletionRequest:
+      type: object
+      required: [model, messages]
+      properties:
+        model:
+          type: string
+          example: "gpt-4o"
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                enum: [system, user, assistant]
+              content:
+                type: string
+        temperature:
+          type: number
+        max_tokens:
+          type: integer
+        stream:
+          type: boolean

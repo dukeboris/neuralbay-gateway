@@ -1,16 +1,30 @@
 ﻿{
-  "name": "neuralbay",
+  "name": "@neuralbay/sdk",
   "version": "0.1.0",
-  "description": "NeuralBay AI Gateway JavaScript SDK",
-  "main": "dist/neuralbay.js",
-  "types": "dist/neuralbay.d.ts",
+  "description": "NeuralBay AI Gateway JavaScript/TypeScript SDK",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["ai", "api", "gateway", "llm"],
+  "keywords": ["ai", "llm", "openai", "claude", "gemini", "gateway", "neuralbay"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dukeboris/neuralbay-gateway.git",
+    "directory": "sdk/javascript"
+  },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.7"
   }
 }

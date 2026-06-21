@@ -1,0 +1,34 @@
+﻿[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neuralbay"
+version = "0.1.0"
+description = "NeuralBay AI Gateway Python SDK"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "NeuralBay Team"}]
+keywords = ["ai", "llm", "openai", "claude", "gemini", "gateway"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+async = ["httpx>=0.27"]
+
+[project.urls]
+Homepage = "https://github.com/dukeboris/neuralbay-gateway"
+Documentation = "https://github.com/dukeboris/neuralbay-gateway#readme"
+Repository = "https://github.com/dukeboris/neuralbay-gateway"
