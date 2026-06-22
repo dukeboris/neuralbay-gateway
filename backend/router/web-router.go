@@ -2,6 +2,8 @@ package router
 
 import (
 	"embed"
+	"fmt"
+	"io/fs"
 	"net/http"
 	"strings"
 
@@ -25,6 +27,20 @@ func SetWebRouter(router *gin.Engine, assets ThemeAssets) {
 	defaultFS := common.EmbedFolder(assets.DefaultBuildFS, "web/default/dist")
 	classicFS := common.EmbedFolder(assets.ClassicBuildFS, "web/classic/dist")
 	themeFS := common.NewThemeAwareFS(defaultFS, classicFS)
+
+	// Serve /_next/static files via http.FileServer
+	// NOTE: Go embed excludes files/dirs starting with "_", so we renamed
+	// _next -> next in the dist directory. Requests for /_next/ are rewritten.
+	subFS, _ := fs.Sub(assets.DefaultBuildFS, "web/default/dist")
+	fileServer := http.FileServer(http.FS(subFS))
+	router.GET("/_next/static/*filepath", func(c *gin.Context) {
+		// Rewrite /_next/static/... -> /next/static/... (Go embed safe path)
+		newPath := "/next/static/" + c.Param("filepath")
+		c.Request.URL.Path = newPath
+		common.SysLog(fmt.Sprintf("Static serve: %s -> %s", c.Request.RequestURI, newPath))
+		fileServer.ServeHTTP(c.Writer, c.Request)
+		c.Abort()
+	})
 
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	router.Use(middleware.GlobalWebRateLimit())

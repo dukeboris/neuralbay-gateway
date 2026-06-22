@@ -1,36 +1,35 @@
 package common
 
 import (
+	"fmt"
 	"embed"
 	"io/fs"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/static"
 )
 
-// Credit: https://github.com/gin-contrib/static/issues/19
-
 type embedFileSystem struct {
 	http.FileSystem
+	rawFS fs.FS
 }
 
 func (e *embedFileSystem) Exists(prefix string, path string) bool {
-	_, err := e.Open(path)
-	if err != nil {
+	cleanPath := strings.TrimPrefix(path, "/")
+	if cleanPath == "" {
 		return false
 	}
-	return true
+	_, err := e.rawFS.Open(cleanPath)
+	SysLog(fmt.Sprintf("EmbedExists: path=%q clean=%q err=%v", path, cleanPath, err))
+	return err == nil
 }
 
 func (e *embedFileSystem) Open(name string) (http.File, error) {
 	if name == "/" {
-		// This will make sure the index page goes to NoRouter handler,
-		// which will use the replaced index bytes with analytic codes.
 		return nil, os.ErrNotExist
 	}
-	// Strip leading slash: http.FS (which wraps fs.FS) requires paths
-	// without a leading slash per fs.ValidPath.
 	if len(name) > 0 && name[0] == '/' {
 		name = name[1:]
 	}
@@ -44,12 +43,10 @@ func EmbedFolder(fsEmbed embed.FS, targetPath string) static.ServeFileSystem {
 	}
 	return &embedFileSystem{
 		FileSystem: http.FS(efs),
+		rawFS:      efs,
 	}
 }
 
-// themeAwareFileSystem delegates to the appropriate embedded FS based on
-// the current theme (via GetTheme). This enables runtime theme switching
-// without restarting the server.
 type themeAwareFileSystem struct {
 	defaultFS static.ServeFileSystem
 	classicFS static.ServeFileSystem
