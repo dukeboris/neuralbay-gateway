@@ -4,11 +4,14 @@ import { createContext, useContext, useState, useCallback, type ReactNode, useEf
 import en from "./en.json"
 import zh from "./zh.json"
 import ar from "./ar.json"
+import id from "./id.json"
+import th from "./th.json"
+import vi from "./vi.json"
 
-type Locale = "en" | "zh" | "ar"
+type Locale = "en" | "zh" | "ar" | "id" | "th" | "vi"
 type TranslationMap = Record<string, Record<string, string>>
 
-const translations: Record<Locale, TranslationMap> = { en, zh, ar }
+const translations: Record<Locale, TranslationMap> = { en, zh, ar, id, th, vi }
 
 // RTL locales
 const rtlLocales: Locale[] = ["ar"]
@@ -37,7 +40,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("locale") as Locale | null
-    if (saved === "en" || saved === "zh" || saved === "ar") setLocaleState(saved)
+    if (saved === "en" || saved === "zh" || saved === "ar" || saved === "id" || saved === "th" || saved === "vi") setLocaleState(saved)
   }, [])
 
   const setLocale = useCallback((l: Locale) => {

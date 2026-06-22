@@ -49,7 +49,7 @@ export default function DashboardLayout({
     router.replace("/login")
   }
 
-  const langBtn = (code: "en" | "zh" | "ar", label: string) => (
+  const langBtn = (code: "en" | "zh" | "ar" | "id" | "th" | "vi", label: string) => (
     <button
       key={code}
       onClick={() => setLocale(code)}
