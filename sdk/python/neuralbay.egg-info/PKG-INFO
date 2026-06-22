@@ -1,0 +1,60 @@
+Metadata-Version: 2.4
+Name: neuralbay
+Version: 0.1.0
+Summary: NeuralBay AI Gateway Python SDK
+Author: NeuralBay Team
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/dukeboris/neuralbay-gateway
+Project-URL: Documentation, https://github.com/dukeboris/neuralbay-gateway#readme
+Project-URL: Repository, https://github.com/dukeboris/neuralbay-gateway
+Keywords: ai,llm,openai,claude,gemini,gateway
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: httpx>=0.27
+Provides-Extra: async
+Requires-Dist: httpx>=0.27; extra == "async"
+Dynamic: requires-python
+
+# NeuralBay Python SDK
+
+Python client for the NeuralBay AI Gateway.
+
+## Installation
+
+```bash
+pip install neuralbay
+```
+
+## Quick Start
+
+```python
+from neuralbay import NeuralBay
+
+client = NeuralBay(api_key="sk-...")
+
+# Chat completion
+response = client.chat(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# Stream chat
+for chunk in client.stream_chat(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello!"}]
+):
+    print(chunk)
+
+# List models
+models = client.list_models()
+
+# Get usage
+usage = client.get_usage()
+```

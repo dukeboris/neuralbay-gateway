@@ -1,4 +1,4 @@
-﻿[build-system]
+[build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -7,7 +7,7 @@ name = "neuralbay"
 version = "0.1.0"
 description = "NeuralBay AI Gateway Python SDK"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.9"
 authors = [{name = "NeuralBay Team"}]
 keywords = ["ai", "llm", "openai", "claude", "gemini", "gateway"]
