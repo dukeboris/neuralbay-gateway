@@ -3,11 +3,15 @@
 import { createContext, useContext, useState, useCallback, type ReactNode, useEffect } from "react"
 import en from "./en.json"
 import zh from "./zh.json"
+import ar from "./ar.json"
 
-type Locale = "en" | "zh"
+type Locale = "en" | "zh" | "ar"
 type TranslationMap = Record<string, Record<string, string>>
 
-const translations: Record<Locale, TranslationMap> = { en, zh }
+const translations: Record<Locale, TranslationMap> = { en, zh, ar }
+
+// RTL locales
+const rtlLocales: Locale[] = ["ar"]
 
 function t(key: string, locale: Locale): string {
   const parts = key.split(".")
@@ -23,6 +27,7 @@ interface I18nContextType {
   locale: Locale
   setLocale: (l: Locale) => void
   t: (key: string) => string
+  isRTL: boolean
 }
 
 const I18nContext = createContext<I18nContextType | null>(null)
@@ -32,16 +37,30 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("locale") as Locale | null
-    if (saved === "en" || saved === "zh") setLocaleState(saved)
+    if (saved === "en" || saved === "zh" || saved === "ar") setLocaleState(saved)
   }, [])
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l)
     localStorage.setItem("locale", l)
+
+    // Handle RTL direction
+    const isRTL = rtlLocales.includes(l)
+    document.documentElement.dir = isRTL ? "rtl" : "ltr"
+    document.documentElement.lang = l
   }, [])
 
+  // Set initial dir
+  useEffect(() => {
+    const isRTL = rtlLocales.includes(locale)
+    document.documentElement.dir = isRTL ? "rtl" : "ltr"
+    document.documentElement.lang = locale
+  }, [locale])
+
+  const isRTL = rtlLocales.includes(locale)
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale, t: (key) => t(key, locale) }}>
+    <I18nContext.Provider value={{ locale, setLocale, t: (key) => t(key, locale), isRTL }}>
       {children}
     </I18nContext.Provider>
   )

@@ -49,9 +49,22 @@ export default function DashboardLayout({
     router.replace("/login")
   }
 
+  const langBtn = (code: "en" | "zh" | "ar", label: string) => (
+    <button
+      key={code}
+      onClick={() => setLocale(code)}
+      className={`rounded px-2 py-1 text-xs font-medium ${
+        locale === code
+          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
+          : "text-gray-400 hover:text-gray-600"
+      }`}
+    >
+      {label}
+    </button>
+  )
+
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <aside className={`${sidebarOpen ? "w-64" : "w-16"} border-r border-gray-200 bg-white transition-all dark:border-gray-800 dark:bg-gray-950`}>
         <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
           {sidebarOpen && (
@@ -68,9 +81,7 @@ export default function DashboardLayout({
         <nav className="flex flex-col justify-between" style={{ height: "calc(100vh - 64px)" }}>
           <div className="space-y-1 p-4">
             {navItems.map((item) => {
-              const activePath = item.href
-              // dashboard layout renders for /dashboard only; other routes also match /dashboard layout
-              const isActive = pathname === item.href || (item.href === "/dashboard" && pathname === "/dashboard")
+              const isActive = pathname === item.href
               return (
                 <Link
                   key={item.href}
@@ -90,22 +101,11 @@ export default function DashboardLayout({
           <div className="border-t border-gray-200 dark:border-gray-800">
             {sidebarOpen && (
               <div className="p-4 space-y-3">
-                {/* Language switcher */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setLocale("en")}
-                    className={`rounded px-2 py-1 text-xs font-medium ${locale === "en" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300" : "text-gray-400 hover:text-gray-600"}`}
-                  >
-                    EN
-                  </button>
-                  <button
-                    onClick={() => setLocale("zh")}
-                    className={`rounded px-2 py-1 text-xs font-medium ${locale === "zh" ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300" : "text-gray-400 hover:text-gray-600"}`}
-                  >
-                    中文
-                  </button>
+                <div className="flex items-center gap-1">
+                  {langBtn("en", "EN")}
+                  {langBtn("zh", "中文")}
+                  {langBtn("ar", "العربية")}
                 </div>
-                {/* User info */}
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-medium text-white">
                     {user.display_name?.[0] || user.username?.[0] || "U"}
@@ -134,11 +134,10 @@ export default function DashboardLayout({
         </nav>
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
         <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 dark:border-gray-800 dark:bg-gray-950">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {navItems.find((n) => n.href === pathname)?.labelKey ? t(navItems.find((n) => n.href === pathname)!.labelKey) : t("dashboard.title")}
+            {t(navItems.find((n) => n.href === pathname)?.labelKey ?? "dashboard.title")}
           </h2>
           <div className="flex items-center gap-4">
             <a
