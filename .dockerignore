@@ -1,8 +1,16 @@
-﻿node_modules
-.git
+﻿# NeuralBay Docker ignore
+.git/
+.github/
 *.md
+*.exe
+*.db
 .env
-.env.local
-docs
-scripts
-sdk
+deploy/
+docs/
+sdk/
+web/node_modules/
+web/.next/
+web/build/
+backend/one-api.db
+backend/data/
+backend/logs/

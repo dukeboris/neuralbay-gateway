@@ -1,0 +1,50 @@
+﻿# Fly.io configuration for NeuralBay AI Gateway
+# Free tier: 256MB RAM, 1GB persistent volume, auto-HTTPS
+
+app = "neuralbay-gateway"
+primary_region = "sin"  # Singapore — best latency for SEA + Middle East
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3000"
+  DB_TYPE = "sqlite"
+  SQLITE_PATH = "/data/one-api.db?_busy_timeout=30000"
+  SESSION_SECRET = "a8a0uSPFp5cezxLT5vk3ZykXjmDsXx3a"
+  CRYPTO_SECRET = "551dNO6V87CIvoBpWoWPywDFEECGvbDK"
+  JWT_SECRET = "Jj6iO59tsckBqZBWMGe7VHiEQeHSsiYX"
+  TZ = "Asia/Singapore"
+  ERROR_LOG_ENABLED = "true"
+  NODE_NAME = "neuralbay-sin-1"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.http_checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "get"
+    path = "/api/status"
+
+[mounts]
+  source = "neuralbay_data"
+  destination = "/data"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
