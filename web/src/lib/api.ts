@@ -1,4 +1,4 @@
-﻿// ============================================================
+// ============================================================
 // NeuralBay API Gateway — API 客户端
 // 基于 fetch 封装，自动处理 session auth 和错误
 // ============================================================
@@ -31,23 +31,37 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${BASE_URL}${endpoint}`
-  const res = await fetch(url, {
-    ...options,
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  })
+
+  let res: Response
+  try {
+    res = await fetch(url, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    })
+  } catch (networkError) {
+    throw new ApiError(
+      "Network error: server may be waking up (free tier). Please wait a moment and try again.",
+      0
+    )
+  }
 
   if (!res.ok) {
-    throw new ApiError(`HTTP ${res.status}: ${res.statusText}`, res.status)
+    let msg = `HTTP ${res.status}: ${res.statusText}`
+    try {
+      const errJson = await res.json()
+      if (errJson.message) msg = errJson.message
+    } catch {}
+    throw new ApiError(msg, res.status)
   }
 
   const json: ApiResponse<T> = await res.json()
 
   if (!json.success) {
-    throw new ApiError(json.message || "请求失败", res.status)
+    throw new ApiError(json.message || "Request failed", res.status)
   }
 
   return json.data

@@ -1,5 +1,5 @@
-ï»¿# Render Blueprint â€” one-click deploy for NeuralBay AI Gateway
-# Go to https://dashboard.render.com â†’ Blueprint â†’ Manual Sync
+# Render Blueprint ¡ª one-click deploy for NeuralBay AI Gateway
+# Go to https://dashboard.render.com ¡ú Blueprint ¡ú Manual Sync
 
 services:
   - type: web
@@ -24,5 +24,7 @@ services:
         value: Asia/Singapore
       - key: ERROR_LOG_ENABLED
         value: "true"
+      - key: SERVER_ADDRESS
+        value: https://neuralbay-gateway-axj4.onrender.com
       - key: NODE_NAME
         value: neuralbay-sin-1
