@@ -1,4 +1,4 @@
-package constant
+﻿package constant
 
 const (
 	ChannelTypeUnknown        = 0
@@ -56,6 +56,7 @@ const (
 	ChannelTypeReplicate      = 56
 	ChannelTypeCodex          = 57
 	ChannelTypeAdvancedCustom = 58
+	ChannelTypeG42 = 59
 	ChannelTypeDummy          // this one is only for count, do not add any channel after this
 
 )
@@ -177,7 +178,8 @@ var ChannelTypeNames = map[int]string{
 	ChannelTypeSora:           "Sora",
 	ChannelTypeReplicate:      "Replicate",
 	ChannelTypeCodex:          "ChatGPT Subscription (Codex)",
-	ChannelTypeAdvancedCustom: "Advanced Custom",
+		ChannelTypeG42:           "G42 (Jais)",
+ChannelTypeAdvancedCustom: "Advanced Custom",
 }
 
 func GetChannelTypeName(channelType int) string {
@@ -210,3 +212,4 @@ var ChannelSpecialBases = map[string]ChannelSpecialBase{
 		OpenAIBaseURL: "https://ark.cn-beijing.volces.com/api/coding/v3",
 	},
 }
+

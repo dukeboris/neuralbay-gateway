@@ -1,4 +1,4 @@
-package relay
+﻿package relay
 
 import (
 	"strconv"
@@ -16,6 +16,7 @@ import (
 	"github.com/QuantumNous/new-api/relay/channel/cohere"
 	"github.com/QuantumNous/new-api/relay/channel/coze"
 	"github.com/QuantumNous/new-api/relay/channel/deepseek"
+	"github.com/QuantumNous/new-api/relay/channel/g42"
 	"github.com/QuantumNous/new-api/relay/channel/dify"
 	"github.com/QuantumNous/new-api/relay/channel/gemini"
 	"github.com/QuantumNous/new-api/relay/channel/jimeng"
@@ -123,6 +124,8 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &codex.Adaptor{}
 	case constant.APITypeAdvancedCustom:
 		return &advancedcustom.Adaptor{}
+	case constant.ChannelTypeG42:
+		return &g42.Adaptor{}
 	}
 	return nil
 }
@@ -166,3 +169,5 @@ func GetTaskAdaptor(platform constant.TaskPlatform) channel.TaskAdaptor {
 	}
 	return nil
 }
+
+
