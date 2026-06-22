@@ -173,6 +173,7 @@ func main() {
 	//server.Use(gzip.Gzip(gzip.DefaultCompression))
 	server.Use(middleware.RequestId())
 	server.Use(middleware.PrometheusMetrics())
+	server.Use(middleware.GeoRoute())
 	server.Use(middleware.PoweredBy())
 	server.Use(middleware.I18n())
 	middleware.SetUpLogger(server)
@@ -333,4 +334,5 @@ func InitResources() error {
 
 	return nil
 }
+
 
