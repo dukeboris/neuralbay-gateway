@@ -57,6 +57,8 @@ const (
 	ChannelTypeCodex          = 57
 	ChannelTypeAdvancedCustom = 58
 	ChannelTypeG42 = 59
+	ChannelTypeFalcon  = 60
+	ChannelTypeSeaLion = 61
 	ChannelTypeDummy          // this one is only for count, do not add any channel after this
 
 )
@@ -179,6 +181,8 @@ var ChannelTypeNames = map[int]string{
 	ChannelTypeReplicate:      "Replicate",
 	ChannelTypeCodex:          "ChatGPT Subscription (Codex)",
 		ChannelTypeG42:           "G42 (Jais)",
+	ChannelTypeFalcon:        "Falcon (TII)",
+	ChannelTypeSeaLion:       "SEA-LION (AI Singapore)",
 ChannelTypeAdvancedCustom: "Advanced Custom",
 }
 
@@ -212,4 +216,5 @@ var ChannelSpecialBases = map[string]ChannelSpecialBase{
 		OpenAIBaseURL: "https://ark.cn-beijing.volces.com/api/coding/v3",
 	},
 }
+
 

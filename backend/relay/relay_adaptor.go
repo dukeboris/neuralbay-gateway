@@ -17,6 +17,8 @@ import (
 	"github.com/QuantumNous/new-api/relay/channel/coze"
 	"github.com/QuantumNous/new-api/relay/channel/deepseek"
 	"github.com/QuantumNous/new-api/relay/channel/g42"
+	"github.com/QuantumNous/new-api/relay/channel/falcon"
+	"github.com/QuantumNous/new-api/relay/channel/sealion"
 	"github.com/QuantumNous/new-api/relay/channel/dify"
 	"github.com/QuantumNous/new-api/relay/channel/gemini"
 	"github.com/QuantumNous/new-api/relay/channel/jimeng"
@@ -126,6 +128,10 @@ func GetAdaptor(apiType int) channel.Adaptor {
 		return &advancedcustom.Adaptor{}
 	case constant.ChannelTypeG42:
 		return &g42.Adaptor{}
+	case constant.ChannelTypeFalcon:
+		return &falcon.Adaptor{}
+	case constant.ChannelTypeSeaLion:
+		return &sealion.Adaptor{}
 	}
 	return nil
 }
@@ -169,5 +175,6 @@ func GetTaskAdaptor(platform constant.TaskPlatform) channel.TaskAdaptor {
 	}
 	return nil
 }
+
 
 
