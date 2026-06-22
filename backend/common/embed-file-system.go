@@ -18,7 +18,13 @@ type embedFileSystem struct {
 func (e *embedFileSystem) Exists(prefix string, path string) bool {
 	_, err := e.Open(path)
 	if err != nil {
-		return false
+		// Try with leading slash for http.FS compatibility
+		if path != "" && path[0] != '/' {
+			_, err = e.FileSystem.Open("/" + path)
+		}
+		if err != nil {
+			return false
+		}
 	}
 	return true
 }
@@ -28,6 +34,10 @@ func (e *embedFileSystem) Open(name string) (http.File, error) {
 		// This will make sure the index page goes to NoRouter handler,
 		// which will use the replaced index bytes with analytic codes.
 		return nil, os.ErrNotExist
+	}
+	// Normalize: http.FS requires a leading slash
+	if name != "" && name[0] != '/' {
+		name = "/" + name
 	}
 	return e.FileSystem.Open(name)
 }
