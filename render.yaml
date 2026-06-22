@@ -1,8 +1,5 @@
 ﻿# Render Blueprint — one-click deploy for NeuralBay AI Gateway
-# 1. Go to https://dashboard.render.com
-# 2. Sign up with GitHub
-# 3. Click "New" → "Blueprint" → connect this repo
-# 4. Render auto-detects this file and deploys
+# Go to https://dashboard.render.com → Blueprint → Manual Sync
 
 services:
   - type: web
@@ -13,10 +10,10 @@ services:
     region: singapore
     healthCheckPath: /api/status
     envVars:
-      - key: PORT
-        value: "3000"
       - key: DB_TYPE
         value: sqlite
+      - key: SQLITE_PATH
+        value: /data/one-api.db?_busy_timeout=30000
       - key: SESSION_SECRET
         generateValue: true
       - key: CRYPTO_SECRET
