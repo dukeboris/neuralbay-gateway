@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -223,6 +224,8 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 
 		if newAPIError == nil {
 			relayInfo.LastError = nil
+			channelTypeStr := strconv.Itoa(relayInfo.ChannelType)
+			middleware.RecordRelayRequest(relayInfo.OriginModelName, channelTypeStr, "success")
 			return
 		}
 
