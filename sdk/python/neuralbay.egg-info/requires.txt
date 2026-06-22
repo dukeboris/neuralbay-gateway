@@ -1,4 +1,0 @@
-httpx>=0.27
-
-[async]
-httpx>=0.27
